@@ -5,11 +5,19 @@ apiEndpoints:
   employeeEndpoint:
     path: /employee/*
     methods: GET, POST, PUT, DELETE
-
+  authenticationEndpoint:
+    path: /auth/*
+    methods: GET, POST, PUT, DELETE, OPTIONS
+  userEndpoint:
+    path: /user/*
+    methods: GET, POST, PUT, DELETE
 serviceEndpoints:
   employeeService:
     url: http://localhost:5051
-
+  authenticationService:
+    url: http://localhost:5052
+  userService:
+    url: http://localhost:5053
 pipelines:
   employeePipeline:
     apiEndpoints:
@@ -21,7 +29,26 @@ pipelines:
       - proxy:
           - action:
               serviceEndpoint: employeeService 
-
+  authenticationPipeline:
+    apiEndpoints:
+      - authenticationEndpoint
+    policies:
+      - log:
+          - action:
+              message: "Incoming request to /auth/*"
+      - proxy:
+          - action:
+              serviceEndpoint: authenticationService
+  userPipeline:
+    apiEndpoints:
+      - userEndpoint
+    policies:
+      - log:
+          - action:
+              message: "Incoming request to /user/*"
+      - proxy:
+          - action:
+              serviceEndpoint: userService
 policies:
   - basic-auth
   - cors

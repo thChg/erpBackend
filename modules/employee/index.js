@@ -1,15 +1,19 @@
 const express = require("express");
 const { getEmployeeList } = require("./controllers/getEmployeeList");
-const errorHandler = require("./middlewares/errorHandler");
+const errorHandler = require("../../masterPage/middlewares/errorHandler");
 const cors = require("cors")
-require("./config/database");
-require("dotenv").config();
+const connectToDB = require("../../masterPage/config/databaseConnection");
+require("dotenv").config({path: "../../.env"});
 
-const PORT = process.env.PORT;
+const PORT = process.env.EMPLOYEE_PORT;
+const DB_NAME = process.env.EMPLOYEE_DB_NAME;
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors())
+
+connectToDB(DB_NAME);
 
 app.get("/employee/get", getEmployeeList);
 // app.post("/employee/post", employeeRoute);

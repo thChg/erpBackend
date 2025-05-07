@@ -6,6 +6,11 @@
   "version": "1.0.0",
   "main": "server.js",
   "dependencies": {
-    "express-gateway": "^1.16.11"
+    "amqplib": "^0.10.7",
+    "dotenv": "^16.5.0",
+    "express-async-handler": "^1.2.0",
+    "express-gateway": "^1.16.11",
+    "mongoose": "^8.13.2",
+    "winston": "^3.17.0"
   }
 }

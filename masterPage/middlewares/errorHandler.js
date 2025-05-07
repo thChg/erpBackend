@@ -1,4 +1,4 @@
-const ERROR_CODE = require("../../../constants/errorCode");
+const ERROR_CODE = require("../../constants/errorCode");
 
 const errorHandler = (err, req, res, next) => {
   switch (res.statusCode) {
