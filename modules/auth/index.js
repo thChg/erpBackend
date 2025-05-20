@@ -7,11 +7,13 @@ const { hash, compare } = require("bcrypt");
 require("dotenv").config({ path: "../../.env" });
 
 const connectToDB = require("../../masterPage/config/databaseConnection");
-const Account = require("./models/Account");
 const errorHandler = require("../../masterPage/middlewares/errorHandler");
+const AuthValidate = require("../../masterPage/middlewares/authValidate")
 const { onUserRegister } = require("./producers");
 const { logInfo } = require("../../masterPage/middlewares/logger");
 const cookieParser = require("cookie-parser");
+const Account = require("./models/Account");
+const getUserPermissions = require("../order/policies/getUserPermissions");
 
 const PORT = process.env.AUTH_PORT;
 const DB_NAME = process.env.AUTH_DB_NAME;
@@ -33,7 +35,7 @@ app.use(cookieParser());
 connectToDB(DB_NAME);
 
 app.use(logInfo);
-// working on it
+
 app.post(
   "/auth/login",
   AsyncHandler(async (req, res) => {
@@ -65,8 +67,15 @@ app.post(
 
 app.post(
   "/auth/register",
+  AuthValidate,
   AsyncHandler(async (req, res) => {
-    const { username, password, role } = req.body;
+    const user = req.user;
+    const permissions = await getUserPermissions(user);
+    if (permissions.role !== "admin") {
+      res.status(403);
+      throw new Error("You are not authorized to access this resource");
+    }
+    const { username, password, role, apartment } = req.body;
     if (!username || !password || !role) {
       res.status(400);
       throw new Error("All fields are mandatory!");
@@ -81,7 +90,7 @@ app.post(
       username,
       password: hashedPassword,
     });
-    await onUserRegister({ username, role });
+    await onUserRegister({ username, role, apartment });
 
     res.json({
       success: true,

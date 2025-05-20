@@ -11,9 +11,13 @@ const UserSchema = new mongoose.Schema(
       unique: true,
     },
     role: {
-      type: DATA_TYPE.STRING,
-      enum: ["accountant", "user"],
+      type: DATA_TYPE.OBJECT_ID,
+      ref: "Role",
+      required: true,
     },
+    apartment: {
+      type: DATA_TYPE.STRING,
+    }
   },
   { timestamps: true, collection: "users" }
 );

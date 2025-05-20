@@ -3,20 +3,29 @@ const { getEmployeeList } = require("./controllers/getEmployeeList");
 const errorHandler = require("../../masterPage/middlewares/errorHandler");
 const cors = require("cors")
 const connectToDB = require("../../masterPage/config/databaseConnection");
+const router = require("./routes/employeeRoute");
+const { logInfo } = require("../../masterPage/middlewares/logger");
+const cookieParser = require("cookie-parser");
 require("dotenv").config({path: "../../.env"});
 
 const PORT = process.env.EMPLOYEE_PORT;
 const DB_NAME = process.env.EMPLOYEE_DB_NAME;
+const CLIENT_URL = process.env.CLIENT_URL;
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors())
+app.use(cors({
+  origin: CLIENT_URL,
+  credentials: true,
+}));
+app.use(cookieParser());
 
 connectToDB(DB_NAME);
 
-app.get("/employee/get", getEmployeeList);
-// app.post("/employee/post", employeeRoute);
+app.use(logInfo);
+app.use("/employee" ,router)
+// app.get("/employee/permissions", getEmployeePermissions);
 // app.get("/employee/get/:id", employeeRoute);
 // app.put("/employee/put/:id", employeeRoute);
 // app.delete("/employee/delete/:id", );
