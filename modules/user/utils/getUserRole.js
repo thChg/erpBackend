@@ -10,10 +10,6 @@ const getUserRole = async (user) => {
 
   const userData = await User.findOne({ username }).populate({
     path: "role",
-    populate: {
-      path: "permissions",
-      model: "Permission",
-    },
   });
 
   if (!userData) {
@@ -23,7 +19,7 @@ const getUserRole = async (user) => {
   await setCache(`user:permissions:${username}`, {
     role: userData.role.role,
     apartment: userData.apartment,
-    permissions: userData.role.permissions.map((permission) => permission.name),
+    permissions: userData.role.permissions,
   });
 
   return userData.role.role;

@@ -27,7 +27,6 @@ app.use(
 app.use(cookieParser());
 
 connectToDB(DB_NAME);
-// Consume the message from the queue (RabbitMQ)
 consume();
 
 app.use("/user", userRoute);

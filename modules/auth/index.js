@@ -8,12 +8,13 @@ require("dotenv").config({ path: "../../.env" });
 
 const connectToDB = require("../../masterPage/config/databaseConnection");
 const errorHandler = require("../../masterPage/middlewares/errorHandler");
-const AuthValidate = require("../../masterPage/middlewares/authValidate")
+const AuthValidate = require("../../masterPage/middlewares/authValidate");
 const { onUserRegister } = require("./producers");
 const { logInfo } = require("../../masterPage/middlewares/logger");
 const cookieParser = require("cookie-parser");
 const Account = require("./models/Account");
 const getUserPermissions = require("../order/policies/getUserPermissions");
+const consume = require("./consumers/consumer");
 
 const PORT = process.env.AUTH_PORT;
 const DB_NAME = process.env.AUTH_DB_NAME;
@@ -33,6 +34,7 @@ app.use(
 app.use(cookieParser());
 
 connectToDB(DB_NAME);
+consume();
 
 app.use(logInfo);
 
@@ -83,7 +85,8 @@ app.post(
     // executing functions
     const account = await Account.findOne({ username });
     if (account) {
-      return res.status(400).json({ message: "User already exists" });
+      res.status(400);
+      throw new Error("User already exists");
     }
     const hashedPassword = await hash(password, 10);
     const newAccount = await Account.create({
@@ -101,9 +104,7 @@ app.post(
 );
 
 app.post("/auth/logout", (req, res) => {
-  res
-    .clearCookie("authToken")
-    .json({message: "Logout successful" });
+  res.clearCookie("authToken").json({ message: "Logout successful" });
 });
 
 app.use((req, res, next) => {

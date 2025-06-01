@@ -5,7 +5,7 @@ const { getUserInfo, getUserList, updateUser, deleteUser } = require("../control
 
 router.get("/me", AuthValidate, getUserInfo);
 router.get("/list" , AuthValidate, getUserList);
-router.put("/update", AuthValidate, updateUser);
-router.delete("/delete", AuthValidate, deleteUser);
+router.put("/update/:id", AuthValidate, updateUser);
+router.delete("/delete/:id", AuthValidate, deleteUser);
 
 module.exports = router;

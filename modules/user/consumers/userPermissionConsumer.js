@@ -7,17 +7,13 @@ const userPermissionHandler = () => {
     //lay quyen
     const user = await User.findOne({ username: message }).populate({
       path: "role",
-      populate: {
-        path: "permissions",
-        model: "Permission",
-      },
     });
 
     //vut vao redis
     await setCache(`user:permissions:${message}`, {
       role: user.role.role,
       apartment: user.apartment,
-      permissions: user.role.permissions.map((permission) => permission.name),
+      permissions: user.role.permissions,
     });
 
     return { role: user.role.role, apartment: user.apartment };
