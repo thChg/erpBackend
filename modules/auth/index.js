@@ -15,6 +15,8 @@ const cookieParser = require("cookie-parser");
 const Account = require("./models/Account");
 const getUserPermissions = require("../order/policies/getUserPermissions");
 const consume = require("./consumers/consumer");
+const parseExcel = require("../../masterPage/middlewares/parseExcel");
+const createUser = require("./utils/createUser");
 
 const PORT = process.env.AUTH_PORT;
 const DB_NAME = process.env.AUTH_DB_NAME;
@@ -83,23 +85,37 @@ app.post(
       throw new Error("All fields are mandatory!");
     }
     // executing functions
-    const account = await Account.findOne({ username });
-    if (account) {
-      res.status(400);
-      throw new Error("User already exists");
-    }
-    const hashedPassword = await hash(password, 10);
-    const newAccount = await Account.create({
-      username,
-      password: hashedPassword,
-    });
-    await onUserRegister({ username, role, apartment });
+    const newAccount = await createUser(username, password, role, apartment);
 
     res.json({
       success: true,
       message: "User created successfully",
       newAccount,
     });
+  })
+);
+
+app.post(
+  "/auth/import",
+  AuthValidate,
+  parseExcel,
+  AsyncHandler(async (req, res) => {
+    const user = req.user;
+    const permissions = await getUserPermissions(user);
+    if (permissions.role !== "admin") {
+      res.status(403);
+      throw new Error("You are not authorized to access this resource");
+    }
+    const data = await Promise.all( req.excelData.map( async (item) => {
+      const { username, password, roleId : role, apartment } = item;
+      if (!username || !password || !role) {
+        res.status(400);
+        throw new Error("All fields are mandatory!");
+      }
+      await createUser(username, password, role, apartment);
+    }));
+      
+    res.json({ message: "Import successful", data });
   })
 );
 
@@ -116,5 +132,5 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`🚀 Auth service is listening on ${PORT}`);
+  console.log(`Auth service is listening on ${PORT}`);
 });
