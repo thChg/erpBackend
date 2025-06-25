@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User statistics</title>
+  </head>
+  <style>
+    * {
+      font-family: Arial, Helvetica, sans-serif;
+      box-sizing: border-box;
+      border-collapse: collapse;
+    }
+    .header {
+      font-size: 2em;
+      font-weight: 800;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .time {
+      margin-top: 10px;
+      font-size: small;
+      text-align: center;
+    }
+    .break {
+      height: 2px;
+      width: 30%;
+      background-color: black;
+      margin: auto;
+    }
+    table {
+      margin-top: 50px;
+      border: 1px solid black;
+      width: 100%;
+    }
+    .table-header {
+      background-color: #ccc;
+      text-align: center;
+      padding: 10px;
+      font-weight: 600;
+    }
+    .table-data {
+      padding: 7px;
+      color: "black";
+    }
+    td {
+      border: 1px solid black;
+    }
+  </style>
+  <body>
+    <div class="header">User statistic</div>
+    <div class="break"></div>
+    <div class="time">{{time}}</div>
+    <table>
+      <thead>
+        <tr class="head-row">
+          <td class="table-header" style="width: 8%">No.</td>
+          <td class="table-header" style="width: 28%">Username</td>
+          <td class="table-header" style="width: 15%">Role</td>
+          <td class="table-header" style="width: 15%">Apartment</td>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each users}}
+        <tr>
+          <td class="table-data" id="num" style="text-align: center">
+            {{num}}
+            <!-- Or you can pass in a num field explicitly -->
+          </td>
+          <td class="table-data">{{username}}</td>
+          <td class="table-data">{{role.role}}</td>
+          <td class="table-data">{{apartment}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>

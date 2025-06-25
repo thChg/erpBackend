@@ -1,8 +1,18 @@
 const AsyncHandler = require("express-async-handler");
 const User = require("../models/User");
-const Role = require("../models/Role");
-const getUserRole = require("../utils/getUserRole");
-const { assertToQueue } = require("../../../masterPage/rabbitmq/producer");
+const Handlebars = require("../../../masterPage/config/sharedHandlebars");
+const {
+  assertToQueue,
+  assertManyToQueue,
+} = require("../../../masterPage/rabbitmq/producer");
+const getUserPermission = require("../utils/getUserPermission");
+const {
+  onManyUserDelete,
+  onUserDelete,
+} = require("../producers/userDeleteProducer");
+const { readFileSync } = require("fs");
+const puppeteer = require("puppeteer");
+const moment = require("moment");
 
 const getUserInfo = AsyncHandler(async (req, res) => {
   const user = req.user;
@@ -29,20 +39,24 @@ const getUserInfo = AsyncHandler(async (req, res) => {
 
 const getUserList = async (req, res) => {
   const user = req.user;
-
-  const role = await getUserRole(user);
-  if (role !== "admin") {
+  const permissions = await getUserPermission(user);
+  if (!permissions.includes("[users:view]")) {
     res.status(403);
     throw new Error("You are not authorized to access this resource");
   }
-  const users = await User.find({}).populate("role");
-  res.json(users);
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const users = await User.find({}).skip(skip).limit(limit).populate("role");
+  const totalUsers = await User.countDocuments({});
+  res.json({ users, totalUsers });
 };
 
 const updateUser = AsyncHandler(async (req, res) => {
   const user = req.user;
-  const userRole = await getUserRole(user);
-  if (userRole !== "admin") {
+  const permissions = await getUserPermission(user);
+  if (!permissions.includes("[users:update]")) {
     res.status(403);
     throw new Error("You are not authorized to access this resource");
   }
@@ -78,8 +92,8 @@ const updateUser = AsyncHandler(async (req, res) => {
 
 const deleteUser = AsyncHandler(async (req, res) => {
   const user = req.user;
-  const role = await getUserRole(user);
-  if (role !== "admin") {
+  const permissions = await getUserPermission(user);
+  if (!permissions.includes("[users:delete]")) {
     res.status(403);
     throw new Error("You are not authorized to access this resource");
   }
@@ -89,8 +103,82 @@ const deleteUser = AsyncHandler(async (req, res) => {
   if (!deletingUser) {
     return res.status(404).json({ message: "User not found" });
   }
-  assertToQueue("auth:delete", { username: deletingUser.username });
+  await onUserDelete(deletingUser.username);
   res.json({ success: true, message: "User deleted successfully" });
+});
+
+const deleteManyUsers = AsyncHandler(async (req, res) => {
+  const user = req.user;
+  const permissions = await getUserPermission(user);
+  if (!permissions.includes("[users:delete]")) {
+    res.status(403);
+    throw new Error("You are not authorized to access this resource");
+  }
+
+  const { users } = req.body;
+
+  const usernames = [];
+
+  await Promise.all(
+    users.map(async (element) => {
+      const curUser = await User.findByIdAndDelete(element);
+      usernames.push(curUser.username);
+    })
+  );
+
+  await onManyUserDelete(usernames);
+
+  res.json({ success: true, message: "Users deleted successfully" });
+});
+
+const printUserList = AsyncHandler(async (req, res) => {
+  const user = req.user;
+  const permissions = await getUserPermission(user);
+
+  if (!permissions.includes("[users:print]")) {
+    res.status(403);
+    throw new Error("You are not authorized to access this resource");
+  }
+  const source = readFileSync("./templates/UserManagementList.html", "utf8");
+
+  const template = Handlebars.compile(source);
+
+  const body = req.body;
+
+  const data = await Promise.all(
+    body.map(async (userId, index) => {
+      const user = await User.findById(userId)
+        .select("username apartment")
+        .populate({ path: "role", select: "role" });
+      return { ...user.toObject(), num: index + 1 };
+    })
+  );
+
+  const result = template({
+    users: data,
+    time: moment(new Date()).format("MMMM Do YYYY"),
+  });
+
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.setContent(result);
+  const pdf = await page.pdf({ format: "A4" });
+  await browser.close();
+
+  res.set("Content-Type", "application/pdf");
+  res.send(pdf);
+});
+
+const getSelectedUSerInfo = AsyncHandler(async (req, res) => {
+  const userIds = req.body;
+  const users = await Promise.all(
+    userIds.map((userId) =>
+      User.findById(userId)
+        .select("username apartment")
+        .populate({ path: "role", select: "role" })
+    )
+  );
+  res.json(users);
 });
 
 module.exports = {
@@ -98,4 +186,7 @@ module.exports = {
   getUserList,
   updateUser,
   deleteUser,
+  deleteManyUsers,
+  printUserList,
+  getSelectedUSerInfo,
 };

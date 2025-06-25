@@ -2,6 +2,8 @@ const AsyncHander = require("express-async-handler");
 const getUserRole = require("../utils/getUserRole");
 const Role = require("../models/Role");
 const Menu = require("../models/Menu");
+const getUserPermission = require("../utils/getUserPermission");
+const User = require("../models/User");
 
 const createRole = AsyncHander(async (req, res) => {
   const user = req.user;
@@ -101,6 +103,31 @@ const deleteRole = AsyncHander(async (req, res) => {
   });
 });
 
+const deleteManyRole = AsyncHander(async (req, res) => {
+  const user = req.user;
+
+  const permissions = await getUserPermission(user);
+  if (!permissions.includes("[users:delete]")) {
+    res.status(403);
+    throw new Error("You are not authorized to access this resource");
+  }
+
+  const { roles } = req.body;
+  await Promise.all(
+    roles.map(async (role) => {
+      const hasRole = await User.exists({ role: role });
+      if (hasRole) {
+        res.status(400);
+        throw new Error("Still existing user with roles specified");
+      }
+
+      await Role.findByIdAndDelete(role);
+    })
+  );
+
+  res.json({ success: true, message: "Roles deleted successfully" });
+});
+
 const createPermission = AsyncHander(async (req, res) => {
   const user = req.user;
   const userRole = await getUserRole(user);
@@ -145,14 +172,30 @@ const getRoleList = AsyncHander(async (req, res) => {
     throw new Error("You are not authorized to access this resource");
   }
 
-  const roles = await Role.find({})
-    .populate({ path: "access", model: "Menu" })
-    .sort({ role: 1 });
+  let page, limit, skip, roles;
+  if (req.query.page && req.query.limit) {
+    page = parseInt(req.query.page) || 1;
+    limit = parseInt(req.query.limit) || 10;
+    skip = (page - 1) * limit;
+
+    roles = await Role.find({})
+      .sort({ role: 1 })
+      .skip(skip)
+      .limit(limit)
+      .populate({ path: "access", model: "Menu" });
+  } else {
+    roles = await Role.find({})
+      .sort({ role: 1 })
+      .populate({ path: "access", model: "Menu" });
+  }
+
   if (!roles) {
     res.status(400);
     throw new Error("Failed to fetch roles");
   }
-  res.json(roles);
+
+  const totalRoles = await Role.countDocuments({});
+  res.json({ roleList: roles, totalRoles });
 });
 
 const getAccessList = AsyncHander(async (req, res) => {
@@ -180,4 +223,5 @@ module.exports = {
   createPermission,
   getRoleList,
   getAccessList,
+  deleteManyRole
 };

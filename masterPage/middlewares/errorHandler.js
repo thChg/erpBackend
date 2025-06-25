@@ -2,6 +2,12 @@ const ERROR_CODE = require("../../constants/errorCode");
 
 const errorHandler = (err, req, res, next) => {
   switch (res.statusCode) {
+    case ERROR_CODE.BAD_REQUEST:
+      res.status(400).json({
+        title: "Bad request",
+        message: err.message,
+        stack: err.stack,
+      });
     case ERROR_CODE.UNAUTHORIZED:
       res.status(401).json({
         title: "Unauthorized",
