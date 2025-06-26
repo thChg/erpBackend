@@ -3,7 +3,7 @@ const {
   default: mongoose,
 } = require("../../../masterPage/config/sharedMongoose");
 
-const MenuSchema = mongoose.Schema(
+const MenuSchema = new mongoose.Schema(
   {
     menu: {
       type: DATA_TYPE.STRING,

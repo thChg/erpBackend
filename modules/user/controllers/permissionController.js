@@ -128,41 +128,6 @@ const deleteManyRole = AsyncHander(async (req, res) => {
   res.json({ success: true, message: "Roles deleted successfully" });
 });
 
-const createPermission = AsyncHander(async (req, res) => {
-  const user = req.user;
-  const userRole = await getUserRole(user);
-
-  if (userRole !== "admin") {
-    res.status(403);
-    throw new Error("You are not authorized to access this resource");
-  }
-
-  const { name } = req.body;
-
-  if (!name) {
-    res.status(400);
-    throw new Error("Please provide all required fields");
-  }
-
-  const existingPermission = await Permission.findOne({ name });
-  if (existingPermission) {
-    res.status(400);
-    throw new Error("Permission already exists");
-  }
-
-  const newPermission = await Permission.create({ name });
-  if (!newPermission) {
-    res.status(400);
-    throw new Error("Failed to create permission");
-  }
-
-  res.json({
-    status: "success",
-    message: "Permission created successfully",
-    data: newPermission,
-  });
-});
-
 const getRoleList = AsyncHander(async (req, res) => {
   const user = req.user;
   const userRole = await getUserRole(user);
@@ -220,7 +185,6 @@ module.exports = {
   createRole,
   updateRole,
   deleteRole,
-  createPermission,
   getRoleList,
   getAccessList,
   deleteManyRole

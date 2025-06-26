@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer List</title>
+  </head>
+  <style>
+    * {
+      font-family: Arial, Helvetica, sans-serif;
+      box-sizing: border-box;
+      border-collapse: collapse;
+    }
+    .header {
+      font-size: 2em;
+      font-weight: 800;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .time {
+      margin-top: 10px;
+      font-size: small;
+      text-align: center;
+    }
+    .break {
+      height: 2px;
+      width: 30%;
+      background-color: black;
+      margin: auto;
+    }
+    table {
+      margin-top: 50px;
+      border: 1px solid black;
+      width: 100%;
+    }
+    .table-header {
+      background-color: #ccc;
+      text-align: center;
+      padding: 10px;
+      font-weight: 600;
+    }
+    .table-data {
+      padding: 7px;
+      color: "black";
+    }
+    td {
+      border: 1px solid black;
+    }
+  </style>
+  <body>
+    <div class="header">User statistic</div>
+    <div class="break"></div>
+    <div class="time">{{time}}</div>
+    <table>
+      <thead>
+        <tr class="head-row">
+          <td class="table-header" style="width: 8%">No.</td>
+          <td class="table-header" style="width: 28%">Full name</td>
+          <td class="table-header" style="width: 15%">Email</td>
+          <td class="table-header" style="width: 15%">Company</td>
+          <td class="table-header" style="width: 15%">Contact</td>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each customers}}
+        <tr>
+          <td class="table-data" id="num" style="text-align: center">
+            {{num}}
+            <!-- Or you can pass in a num field explicitly -->
+          </td>
+          <td class="table-data">{{fullname}}</td>
+          <td class="table-data">{{email}}</td>
+          <td class="table-data">{{company}}</td>
+          <td class="table-data">{{phone}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>

@@ -169,7 +169,7 @@ const printUserList = AsyncHandler(async (req, res) => {
   res.send(pdf);
 });
 
-const getSelectedUSerInfo = AsyncHandler(async (req, res) => {
+const getSelectedUserInfo = AsyncHandler(async (req, res) => {
   const userIds = req.body;
   const users = await Promise.all(
     userIds.map((userId) =>
@@ -188,5 +188,5 @@ module.exports = {
   deleteUser,
   deleteManyUsers,
   printUserList,
-  getSelectedUSerInfo,
+  getSelectedUserInfo,
 };

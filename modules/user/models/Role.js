@@ -3,7 +3,7 @@ const {
   default: mongoose,
 } = require("../../../masterPage/config/sharedMongoose");
 
-const RoleSchema = mongoose.Schema(
+const RoleSchema = new mongoose.Schema(
   {
     role: {
       type: DATA_TYPE.STRING,

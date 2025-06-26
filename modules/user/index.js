@@ -8,6 +8,7 @@ const { consume } = require("./consumers/consumer");
 const userRoute = require("./routes/userRoute")
 const permissionRoute = require("./routes/permissionRoute")
 const menuRoute = require("./routes/menuRoute")
+const customerRoute = require("./routes/customerRoute");
 
 require("dotenv").config({ path: "../../.env" });
 
@@ -32,6 +33,7 @@ consume();
 app.use("/user", userRoute);
 app.use("/user/permission", permissionRoute)
 app.use("/user/page", menuRoute)
+app.use("/user/customer", customerRoute);
 
 app.use((req, res, next) => {
   res.status(404);
