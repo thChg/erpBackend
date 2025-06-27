@@ -11,7 +11,7 @@ const VendorSchema = new mongoose.Schema(
     phone: { type: DATA_TYPE.STRING, required: true, unique: true },
     taxId: { type: DATA_TYPE.STRING, required: true, unique: true },
   },
-  { timestamps: true, collection: "vedors" }
+  { timestamps: true, collection: "vendors" }
 );
 
 module.exports = mongoose.model("Vendor", VendorSchema);

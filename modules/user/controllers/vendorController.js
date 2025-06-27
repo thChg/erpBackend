@@ -1,7 +1,7 @@
 const AsyncHandler = require("express-async-handler");
 const moment = require("moment");
 const getUserPermission = require("../utils/getUserPermission");
-const Customer = require("../models/Customer");
+const Vendor = require("../models/Vendor");
 const {
   onUserCreate,
   onManyUserCreate,
@@ -11,7 +11,7 @@ const User = require("../models/User");
 const { onManyUserDelete } = require("../producers/userDeleteProducer");
 const { generatePdf } = require("../utils/generatePdf");
 
-const getCustomerList = AsyncHandler(async (req, res) => {
+const getVendorList = AsyncHandler(async (req, res) => {
   const user = req.user;
 
   const permissions = await getUserPermission(user);
@@ -23,13 +23,13 @@ const getCustomerList = AsyncHandler(async (req, res) => {
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
   const skip = (page - 1) * limit;
-  const customers = await Customer.find({}).skip(skip).limit(limit);
+  const vendors = await Vendor.find({}).skip(skip).limit(limit);
 
-  const totalCustomers = await Customer.countDocuments({});
-  res.json({ customers, totalCustomers });
+  const totalVendors = await Vendor.countDocuments({});
+  res.json({ vendors, totalVendors });
 });
 
-const createCustomer = AsyncHandler(async (req, res) => {
+const createVendor = AsyncHandler(async (req, res) => {
   const user = req.user;
 
   const permissions = await getUserPermission(user);
@@ -38,22 +38,23 @@ const createCustomer = AsyncHandler(async (req, res) => {
     throw new Error("You are not authorized to this resouce");
   }
 
-  const { fullname, password, email, company, phone } = req.body;
-  const existingCustomer = await User.findOne({ username: email });
+  const { name, password, email, address, phone, taxId } = req.body;
+  const existingVendor = await User.findOne({ username: email });
 
-  if (existingCustomer) {
+  if (existingVendor) {
     res.status(400);
     throw new Error("Email already used!");
   }
 
-  await Customer.create({
-    fullname: fullname,
+  await Vendor.create({
+    name: name,
     email: email,
-    company: company,
+    address: address,
     phone: phone,
+    taxId: taxId,
   });
 
-  const { _id } = await Role.findOne({ role: "customer" });
+  const { _id } = await Role.findOne({ role: "vendor" });
 
   await User.create({ username: email, role: _id });
 
@@ -61,11 +62,11 @@ const createCustomer = AsyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    message: `Customer ${fullname} created successfully`,
+    message: `Vendor ${name} created successfully`,
   });
 });
 
-const deleteManyCustomer = AsyncHandler(async (req, res) => {
+const deleteManyVendor = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:delete]")) {
@@ -73,11 +74,11 @@ const deleteManyCustomer = AsyncHandler(async (req, res) => {
     throw new Error("You are not authorized to this resouce");
   }
 
-  const customerIds = req.body;
+  const vendorIds = req.body;
 
   const usernames = await Promise.all(
-    customerIds.map(async (id) => {
-      const { email } = await Customer.findByIdAndDelete(id);
+    vendorIds.map(async (id) => {
+      const { email } = await Vendor.findByIdAndDelete(id);
       await User.findOneAndDelete({ username: email });
       return email;
     })
@@ -87,11 +88,11 @@ const deleteManyCustomer = AsyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    message: `Customers deleted successfully`,
+    message: `Vendors deleted successfully`,
   });
 });
 
-const createManyCustomer = AsyncHandler(async (req, res) => {
+const createManyVendor = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:create]")) {
@@ -101,11 +102,11 @@ const createManyCustomer = AsyncHandler(async (req, res) => {
 
   const data = req.excelData;
 
-  const { _id } = await Role.findOne({ role: "customer" });
+  const { _id } = await Role.findOne({ role: "vendor" });
 
   const newAccounts = await Promise.all(
-    data.map(async (customer) => {
-      const { fullname, password, company, email, phone } = customer;
+    data.map(async (vendor) => {
+      const { name, password, address, email, phone, taxId } = vendor;
 
       const existingUser = await User.findOne({
         $or: [{ username: email }, { phone: phone }],
@@ -115,7 +116,7 @@ const createManyCustomer = AsyncHandler(async (req, res) => {
         throw new Error(`Email: ${email} or Phone number: ${phone} used`);
       }
 
-      await Customer.create({ fullname, company, email, phone });
+      await Vendor.create({ name, address, email, phone, taxId });
       await User.create({ username: email, role: _id });
       return { username: email, password };
     })
@@ -125,11 +126,11 @@ const createManyCustomer = AsyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    message: `Customers created successfully`,
+    message: `Vendors created successfully`,
   });
 });
 
-const printCustomerList = AsyncHandler(async (req, res) => {
+const printVendorList = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:print]")) {
@@ -140,24 +141,24 @@ const printCustomerList = AsyncHandler(async (req, res) => {
   const body = req.body;
 
   const data = await Promise.all(
-    body.map(async (customerId, index) => {
-      const customer = await Customer.findById(customerId).select(
-        "fullname email company phone"
+    body.map(async (vendorId, index) => {
+      const vendor = await Vendor.findById(vendorId).select(
+        "name email address phone taxId"
       );
-      return { ...customer.toObject(), num: index + 1 };
+      return { ...vendor.toObject(), num: index + 1 };
     })
   );
-
-  const pdf = await generatePdf("CustomerList.html", {
+  
+  const pdf = await generatePdf("VendorList.html", {
     time: moment(new Date()).format("MMMM Do YYYY"),
-    customers: data,
+    vendors: data,
   });
 
   res.set("Content-Type", "application/pdf");
   res.send(pdf);
 });
 
-const getCustomerData = AsyncHandler(async (req, res) => {
+const getVendorData = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:export]")) {
@@ -167,23 +168,21 @@ const getCustomerData = AsyncHandler(async (req, res) => {
 
   const body = req.body;
 
-  const customers = await Promise.all(
+  const vendors = await Promise.all(
     body.map(
-      async (customerId) =>
-        await Customer.findById(customerId).select(
-          "fullname company email phone"
-        )
+      async (vendorId) =>
+        await Vendor.findById(vendorId).select("name email address phone taxId")
     )
   );
 
-  res.json(customers);
+  res.json(vendors);
 });
 
 module.exports = {
-  getCustomerList,
-  createCustomer,
-  deleteManyCustomer,
-  createManyCustomer,
-  printCustomerList,
-  getCustomerData,
+  getVendorList,
+  createVendor,
+  deleteManyVendor,
+  createManyVendor,
+  printVendorList,
+  getVendorData,
 };

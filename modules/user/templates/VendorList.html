@@ -48,30 +48,32 @@
     }
   </style>
   <body>
-    <div class="header">Customer statistic</div>
+    <div class="header">Vendor statistic</div>
     <div class="break"></div>
     <div class="time">{{time}}</div>
     <table>
       <thead>
         <tr class="head-row">
           <td class="table-header" style="width: 8%">No.</td>
-          <td class="table-header" style="width: 28%">Full name</td>
+          <td class="table-header" style="width: 28%">Name</td>
           <td class="table-header" style="width: 15%">Email</td>
-          <td class="table-header" style="width: 15%">Company</td>
+          <td class="table-header" style="width: 15%">Address</td>
           <td class="table-header" style="width: 15%">Contact</td>
+          <td class="table-header" style="width: 15%">Tax ID</td>
         </tr>
       </thead>
       <tbody>
-        {{#each customers}}
+        {{#each vendors}}
         <tr>
           <td class="table-data" id="num" style="text-align: center">
             {{num}}
             <!-- Or you can pass in a num field explicitly -->
           </td>
-          <td class="table-data">{{fullname}}</td>
+          <td class="table-data">{{name}}</td>
           <td class="table-data">{{email}}</td>
-          <td class="table-data">{{company}}</td>
+          <td class="table-data">{{address}}</td>
           <td class="table-data">{{phone}}</td>
+          <td class="table-data">{{taxId}}</td>
         </tr>
         {{/each}}
       </tbody>

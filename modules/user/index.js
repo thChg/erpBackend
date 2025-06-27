@@ -5,10 +5,12 @@ const cookieParser = require("cookie-parser");
 const errorHandler = require("../../masterPage/middlewares/errorHandler");
 const connectToDB = require("../../masterPage/config/databaseConnection");
 const { consume } = require("./consumers/consumer");
-const userRoute = require("./routes/userRoute")
-const permissionRoute = require("./routes/permissionRoute")
-const menuRoute = require("./routes/menuRoute")
+const userRoute = require("./routes/userRoute");
+const permissionRoute = require("./routes/permissionRoute");
+const menuRoute = require("./routes/menuRoute");
 const customerRoute = require("./routes/customerRoute");
+const vendorRoute = require("./routes/vendorRoute");
+const employeeRoute = require("./routes/employeeRoute");
 
 require("dotenv").config({ path: "../../.env" });
 
@@ -31,9 +33,11 @@ connectToDB(DB_NAME);
 consume();
 
 app.use("/user", userRoute);
-app.use("/user/permission", permissionRoute)
-app.use("/user/page", menuRoute)
+app.use("/user/permission", permissionRoute);
+app.use("/user/page", menuRoute);
 app.use("/user/customer", customerRoute);
+app.use("/user/vendor", vendorRoute);
+app.use("/user/employee", employeeRoute);
 
 app.use((req, res, next) => {
   res.status(404);
