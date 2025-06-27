@@ -9,14 +9,13 @@ require("dotenv").config({ path: "../../.env" });
 const connectToDB = require("../../masterPage/config/databaseConnection");
 const errorHandler = require("../../masterPage/middlewares/errorHandler");
 const AuthValidate = require("../../masterPage/middlewares/authValidate");
-const { onUserRegister } = require("./producers");
 const { logInfo } = require("../../masterPage/middlewares/logger");
 const cookieParser = require("cookie-parser");
 const Account = require("./models/Account");
-const getUserPermissions = require("../order/policies/getUserPermissions");
 const consume = require("./consumers/consumer");
 const parseExcel = require("../../masterPage/middlewares/parseExcel");
 const createUser = require("./utils/createUser");
+const getUserData = require("../../masterPage/functions/getUserData");
 
 const PORT = process.env.AUTH_PORT;
 const DB_NAME = process.env.AUTH_DB_NAME;
@@ -74,8 +73,8 @@ app.post(
   AuthValidate,
   AsyncHandler(async (req, res) => {
     const user = req.user;
-    const permissions = await getUserPermissions(user);
-    if (permissions.role !== "admin") {
+    const data = await getUserData(user);
+    if (data.role !== "admin") {
       res.status(403);
       throw new Error("You are not authorized to access this resource");
     }

@@ -9,7 +9,7 @@ const {
 const Role = require("../models/Role");
 const User = require("../models/User");
 const { onManyUserDelete } = require("../producers/userDeleteProducer");
-const { generatePdf } = require("../utils/generatePdf");
+const { generatePdf } = require("../../../masterPage/functions/generatePdf");
 
 const getVendorList = AsyncHandler(async (req, res) => {
   const user = req.user;
@@ -148,7 +148,7 @@ const printVendorList = AsyncHandler(async (req, res) => {
       return { ...vendor.toObject(), num: index + 1 };
     })
   );
-  
+
   const pdf = await generatePdf("VendorList.html", {
     time: moment(new Date()).format("MMMM Do YYYY"),
     vendors: data,

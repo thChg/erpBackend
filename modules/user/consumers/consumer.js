@@ -1,9 +1,9 @@
-const userPermissionHandler = require("./userPermissionConsumer");
+const userDataHandler = require("./userDataConsumer");
 const { userRegisterConsumer } = require("./userRegisterConsumer");
 
 const consume = () => {
   userRegisterConsumer();
-  userPermissionHandler();
+  userDataHandler();
 };
 
 module.exports = {

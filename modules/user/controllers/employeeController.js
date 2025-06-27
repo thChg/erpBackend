@@ -9,7 +9,7 @@ const {
 const Role = require("../models/Role");
 const User = require("../models/User");
 const { onManyUserDelete } = require("../producers/userDeleteProducer");
-const { generatePdf } = require("../utils/generatePdf");
+const { generatePdf } = require("../../../masterPage/functions/generatePdf");
 
 const getEmployeeList = AsyncHandler(async (req, res) => {
   const user = req.user;
