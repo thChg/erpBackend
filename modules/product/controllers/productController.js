@@ -18,6 +18,7 @@ const getProductList = AsyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
   const products = await Product.find({}).skip(skip).limit(limit);
   const totalProducts = await Product.countDocuments();
+  console.log({ products: products, totalProducts: totalProducts });
   res.json({ products: products, totalProducts: totalProducts });
 });
 
@@ -54,7 +55,7 @@ const printVendorProductList = AsyncHandler(async (req, res) => {
   const userData = await getUserData(user);
   if (!userData.permissions.includes("[product:print]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const body = req.body;
@@ -82,15 +83,20 @@ const getVendorProductData = AsyncHandler(async (req, res) => {
   const userData = await getUserData(user);
   if (!userData.permissions.includes("[product:export]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
   const productIds = req.body;
 
-  const data = await Promise.all(productIds.map(async productId => 
-    await Product.findById(productId)
-  ));
+  const data = await Promise.all(
+    productIds.map(async (productId) => await Product.findById(productId))
+  );
 
   res.json(data);
-})
+});
 
-module.exports = { getProductList, createProduct, printVendorProductList, getVendorProductData };
+module.exports = {
+  getProductList,
+  createProduct,
+  printVendorProductList,
+  getVendorProductData,
+};

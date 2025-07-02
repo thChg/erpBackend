@@ -17,7 +17,7 @@ const getEmployeeList = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:view]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const page = parseInt(req.query.page);
@@ -35,7 +35,7 @@ const createEmployee = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:create]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const { fullname, password, email, phone, apartment } = req.body;
@@ -73,7 +73,7 @@ const deleteManyEmployee = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:delete]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const employeeIds = req.body;
@@ -99,7 +99,7 @@ const createManyEmployee = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:create]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const data = req.excelData;
@@ -138,7 +138,7 @@ const printEmployeeList = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:print]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const body = req.body;
@@ -165,7 +165,7 @@ const getEmployeeData = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:export]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const body = req.body;

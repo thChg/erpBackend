@@ -11,6 +11,7 @@ const menuRoute = require("./routes/menuRoute");
 const customerRoute = require("./routes/customerRoute");
 const vendorRoute = require("./routes/vendorRoute");
 const employeeRoute = require("./routes/employeeRoute");
+const accountantRoute = require("./routes/accountantRoute");
 
 require("dotenv").config({ path: "../../.env" });
 
@@ -38,6 +39,7 @@ app.use("/user/page", menuRoute);
 app.use("/user/customer", customerRoute);
 app.use("/user/vendor", vendorRoute);
 app.use("/user/employee", employeeRoute);
+app.use("/user/accountant", accountantRoute);
 
 app.use((req, res, next) => {
   res.status(404);

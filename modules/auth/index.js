@@ -78,13 +78,13 @@ app.post(
       res.status(403);
       throw new Error("You are not authorized to access this resource");
     }
-    const { username, password, role, apartment } = req.body;
+    const { username, password, role } = req.body;
     if (!username || !password || !role) {
       res.status(400);
       throw new Error("All fields are mandatory!");
     }
     // executing functions
-    const newAccount = await createUser(username, password, role, apartment);
+    const newAccount = await createUser(username, password, role);
 
     res.json({
       success: true,

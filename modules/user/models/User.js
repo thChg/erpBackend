@@ -15,9 +15,6 @@ const UserSchema = new mongoose.Schema(
       ref: "Role",
       required: true,
     },
-    apartment: {
-      type: DATA_TYPE.STRING,
-    }
   },
   { timestamps: true, collection: "users" }
 );

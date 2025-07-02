@@ -1,5 +1,4 @@
 const AsyncHandler = require("express-async-handler");
-const getUserPermissions = require("../policies/getUserPermissions");
 const canViewOrders = require("../policies/canViewOrders");
 
 const getOrderPermissions = AsyncHandler( async (req, res) => {

@@ -2,7 +2,7 @@ const { hash } = require("bcrypt");
 const Account = require("../models/Account");
 const { onUserRegister } = require("../producers");
 
-const createUser = async (username, password, role, apartment) => {
+const createUser = async (username, password, role) => {
     try {
         const account = await Account.findOne({ username });
         if (account) {
@@ -13,7 +13,7 @@ const createUser = async (username, password, role, apartment) => {
           username,
           password: hashedPassword,
         });
-        await onUserRegister({ username, role, apartment });
+        await onUserRegister({ username, role });
         return newAccount;
     } catch (error) {
         throw new Error(`Error creating user: ${error.message}`);

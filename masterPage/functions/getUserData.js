@@ -3,7 +3,6 @@ const { getCache } = require("../utils/cacheUtils");
 
 const getUserData = async (user) => {
   const data = await getCache(`user:data:${user.username}`);
-  console.log(`user's data: ${data}`);
   if (data) {
     return data;
   }

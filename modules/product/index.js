@@ -5,7 +5,9 @@ const cookieParser = require("cookie-parser");
 const errorHandler = require("../../masterPage/middlewares/errorHandler");
 const connectToDB = require("../../masterPage/config/databaseConnection");
 
-const vendorRoute = require("./routes/vendorRoute");
+const InventoryRoute = require("./routes/inventoryRoute");
+const PurchaseOrderRoute = require("./routes/purchaseOrderRoute");
+const BOLRoute = require("./routes/billOfLadingRoute")
 
 require("dotenv").config({ path: "../../.env" });
 
@@ -25,8 +27,9 @@ app.use(
 app.use(cookieParser());
 
 connectToDB(DB_NAME);
-app.use("/product/vendor", vendorRoute)
-// app.use("/product/employee", employeeRoute)
+app.use("/product/inventory", InventoryRoute);
+app.use("/product/purchase-order", PurchaseOrderRoute);
+app.use("/product/bill-of-lading", BOLRoute);
 
 app.use((req, res, next) => {
   res.status(404);

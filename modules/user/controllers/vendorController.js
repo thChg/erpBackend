@@ -17,7 +17,7 @@ const getVendorList = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:view]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const page = parseInt(req.query.page);
@@ -35,7 +35,7 @@ const createVendor = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:create]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const { name, password, email, address, phone, taxId } = req.body;
@@ -71,7 +71,7 @@ const deleteManyVendor = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:delete]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const vendorIds = req.body;
@@ -97,7 +97,7 @@ const createManyVendor = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:create]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const data = req.excelData;
@@ -135,7 +135,7 @@ const printVendorList = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:print]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const body = req.body;
@@ -163,7 +163,7 @@ const getVendorData = AsyncHandler(async (req, res) => {
   const permissions = await getUserPermission(user);
   if (!permissions.includes("[people:export]")) {
     res.status(401);
-    throw new Error("You are not authorized to this resouce");
+    throw new Error("You are not authorized to this resource");
   }
 
   const body = req.body;

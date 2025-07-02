@@ -11,7 +11,7 @@ const consumeAndProduce = async (queue, callback) => {
 
       try {
         const result = await callback(message);
-        console.log(result)
+        
         channel.sendToQueue(
           msg.properties.replyTo,
           Buffer.from(JSON.stringify(result)),

@@ -6,10 +6,8 @@ const {
 const ProductSchema = new mongoose.Schema(
   {
     name: { type: DATA_TYPE.STRING, required: true, unique: true },
-    category: { type: DATA_TYPE.STRING, required: true },
-    price: { type: DATA_TYPE.NUMBER, required: true },
-    description: { type: DATA_TYPE.STRING },
-    vendor: {type: DATA_TYPE.OBJECT_ID, required: true},
+    price: { type: DATA_TYPE.NUMBER },
+    unit: { type: DATA_TYPE.STRING },
   },
   { timestamps: true, collection: "products" }
 );
