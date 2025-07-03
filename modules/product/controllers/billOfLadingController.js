@@ -42,28 +42,12 @@ const createBillOfLading = AsyncHandler(async (req, res) => {
         (product) => String(product._id) === String(item.product)
       );
 
-      const existingProductInInventory = await Inventory.findOne({
-        "product.name": product.name,
-      });
-      if (!existingProductInInventory) {
-        await Inventory.create({
-          product: {
-            _id: product._id,
-            name: product.name,
-            unit: product.unit,
-            price: product.price,
-          },
-          importQty: product.quantity,
-          exportQty: 0,
-        });
-      } else {
-        await Inventory.updateOne(
-          { _id: existingProductInInventory._id },
-          {
-            $inc: { importQty: product.quantity },
-          }
-        );
-      }
+      await Inventory.updateOne(
+        { "product._id": item.product },
+        {
+          $inc: { importQty: product.quantity },
+        }
+      );
 
       await PurchaseOrder.updateOne(
         { _id: purchaseOrder._id },

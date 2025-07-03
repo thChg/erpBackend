@@ -4,6 +4,7 @@ const Role = require("../models/Role");
 const Menu = require("../models/Menu");
 const getUserPermission = require("../utils/getUserPermission");
 const User = require("../models/User");
+const { clearCache } = require("../../../masterPage/utils/cacheUtils");
 
 const createRole = AsyncHander(async (req, res) => {
   const user = req.user;
@@ -66,6 +67,8 @@ const updateRole = AsyncHander(async (req, res) => {
     res.status(400);
     throw new Error("Failed to update role");
   }
+
+  await clearCache();
 
   res.json({
     status: "success",
@@ -187,5 +190,5 @@ module.exports = {
   deleteRole,
   getRoleList,
   getAccessList,
-  deleteManyRole
+  deleteManyRole,
 };

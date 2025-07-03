@@ -5,6 +5,7 @@ const {
 
 const SaleOrderSchema = new mongoose.Schema(
   {
+    name: { type: DATA_TYPE.STRING },
     products: [
       {
         _id: { type: DATA_TYPE.OBJECT_ID },
@@ -12,6 +13,7 @@ const SaleOrderSchema = new mongoose.Schema(
         unit: { type: DATA_TYPE.STRING },
         price: { type: DATA_TYPE.NUMBER },
         quantity: { type: DATA_TYPE.NUMBER },
+        status: { type: DATA_TYPE.STRING },
       },
     ],
     status: { type: DATA_TYPE.STRING },

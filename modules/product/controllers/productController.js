@@ -1,14 +1,20 @@
 const AsyncHandler = require("express-async-handler");
 const getUserData = require("../../../masterPage/functions/getUserData");
 const Product = require("../models/Product");
-const { generatePdf } = require("../../../masterPage/functions/generatePdf");
-const moment = require("moment");
+const PurchaseOrder = require("../models/PurchaseOrder");
+const BillOfLading = require("../models/BillOfLading");
+const Inventory = require("../models/Inventory");
+const SaleOrder = require("../models/SaleOrder");
 
 const getProductList = AsyncHandler(async (req, res) => {
   const user = req.user;
 
   const userData = await getUserData(user);
-  if (!userData.permissions.includes("[product:view]")) {
+  if (
+    !["[sales:view]", "[product:view]"].some((p) =>
+      userData.permissions.includes(p)
+    )
+  ) {
     res.status(401);
     throw new Error("You are not authorized to access this resource");
   }
@@ -18,85 +24,113 @@ const getProductList = AsyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
   const products = await Product.find({}).skip(skip).limit(limit);
   const totalProducts = await Product.countDocuments();
-  console.log({ products: products, totalProducts: totalProducts });
+
   res.json({ products: products, totalProducts: totalProducts });
+});
+
+const updateProduct = AsyncHandler(async (req, res) => {
+  const user = req.user;
+  const userData = await getUserData(user);
+  console.log(userData);
+  if (
+    !["[sales:update]", "[product:update]"].some((p) =>
+      userData.permissions.includes(p)
+    )
+  ) {
+    res.status(401);
+    throw new Error("You are not authorized to access this resource");
+  }
+
+  const { id, name, price, unit } = req.body;
+
+  const updatingProduct = await Product.findById(id);
+  if (!updatingProduct) {
+    res.status(400);
+    throw new Error("The product you're updating doesn't exist");
+  }
+
+  updatingProduct.name = name;
+  updatingProduct.price = price;
+  updatingProduct.unit = unit;
+
+  await PurchaseOrder.updateMany(
+    { "products._id": id },
+    {
+      $set: {
+        "products.$.name": name,
+        "products.$.price": price,
+        "products.$.unit": unit,
+      },
+    }
+  );
+
+  await SaleOrder.updateMany(
+    { "products._id": id },
+    {
+      $set: {
+        "products.$.name": name,
+        "products.$.price": price,
+        "products.$.unit": unit,
+      },
+    }
+  );
+
+  await BillOfLading.updateMany(
+    { "products._id": id },
+    {
+      $set: {
+        "products.$.name": name,
+        "products.$.price": price,
+        "products.$.unit": unit,
+      },
+    }
+  );
+
+  await Inventory.updateOne(
+    { "product._id": id },
+    {
+      $set: {
+        "product.name": name,
+        "product.price": price,
+        "product.unit": unit,
+      },
+    }
+  );
+
+  await updatingProduct.save();
+
+  res.json({ success: true, message: "Product updated successfully" });
 });
 
 const createProduct = AsyncHandler(async (req, res) => {
   const user = req.user;
 
   const userData = await getUserData(user);
-
-  if (!userData.permissions.includes("[product:create]")) {
+  if (
+    !["[sales:delete]", "[product:delete]"].some((p) =>
+      userData.permissions.includes(p)
+    )
+  ) {
     res.status(401);
     throw new Error("You are not authorized to access this resource");
   }
-  const { name, category, price, description } = req.body;
 
-  const existingProduct = await Product.findOne({ name });
+  const { name, price, unit } = req.body;
+
+  const existingProduct = await Product.findOne({ name: name, unit: unit });
   if (existingProduct) {
     res.status(400);
     throw new Error("Product already existed");
   }
 
-  await Product.create({
-    name,
-    category,
-    price: parseFloat(price),
-    description,
-    vendor: userData._id,
-  });
+  const product = await Product.create({ name, price, unit });
+  await Inventory.create({ product: product, importQty: 0, exportQty: 0 });
 
-  res.json({ success: true, message: `Product ${name} created successfully` });
-});
-
-const printVendorProductList = AsyncHandler(async (req, res) => {
-  const user = req.user;
-  const userData = await getUserData(user);
-  if (!userData.permissions.includes("[product:print]")) {
-    res.status(401);
-    throw new Error("You are not authorized to this resource");
-  }
-
-  const body = req.body;
-
-  const data = await Promise.all(
-    body.map(async (productId, index) => {
-      const product = await Product.findById(productId).select(
-        "name category description"
-      );
-      return { ...product.toObject(), num: index + 1 };
-    })
-  );
-
-  const pdf = await generatePdf("ProductList.html", {
-    time: moment(new Date()).format("MMMM Do YYYY"),
-    products: data,
-  });
-
-  res.set("Content-Type", "application/pdf");
-  res.send(pdf);
-});
-
-const getVendorProductData = AsyncHandler(async (req, res) => {
-  const user = req.user;
-  const userData = await getUserData(user);
-  if (!userData.permissions.includes("[product:export]")) {
-    res.status(401);
-    throw new Error("You are not authorized to this resource");
-  }
-  const productIds = req.body;
-
-  const data = await Promise.all(
-    productIds.map(async (productId) => await Product.findById(productId))
-  );
-
-  res.json(data);
+  res.json({ success: true, message: "Product created successfully" });
 });
 
 module.exports = {
   getProductList,
+  updateProduct,
   createProduct,
-  printVendorProductList,
-  getVendorProductData,
 };

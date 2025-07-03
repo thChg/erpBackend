@@ -18,4 +18,12 @@ const getCache = async (key) => {
   }
 };
 
-module.exports = { setCache, getCache };
+const clearCache = async () => {
+  try {
+    await redisClient.flushall();
+  } catch (error) {
+    console.error("Error clearing cache", error);
+  }
+};
+
+module.exports = { setCache, getCache, clearCache };

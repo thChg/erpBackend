@@ -6,47 +6,26 @@ const Product = require("../models/Product");
 const createPurchaseOrder = AsyncHandler(async (req, res) => {
   const user = req.user;
   const userData = await getUserData(user);
-  console.log(userData);
+
   if (!userData.permissions.includes("[product:create]")) {
     res.status(401);
     throw new Error("You are not authorized to access this resource");
   }
 
-  const { name, productItems } = req.body;
-  const enrichedProductItems = await Promise.all(
-    productItems.map(async (item) => {
-      const existingProduct = await Product.findOne({ name: item.productName });
-      if (existingProduct) {
-        return {
-          _id: existingProduct._id,
-          name: item.productName,
-          unit: item.unit,
-          price: 0,
-          quantity: item.quantity,
-          status: "pending",
-        };
-      }
-
-      const newProduct = await Product.create({
-        name: item.productName,
-        price: 0,
-        unit: item.unit,
-      });
-
-      return {
-        _id: newProduct._id,
-        name: item.productName,
-        unit: item.unit,
-        price: 0,
-        quantity: item.quantity,
-        status: "pending",
-      };
-    })
-  );
+  const { name, products } = req.body;
+  const existedPO = await PurchaseOrder.findOne({ name: name });
+  if (existedPO) {
+    res.status(400);
+    throw new Error("Existed purchase order name");
+  }
+  const enrichedProducts = products.map((product) => ({
+    ...product,
+    status: "pending",
+  }));
 
   await PurchaseOrder.create({
     name,
-    products: enrichedProductItems,
+    products: enrichedProducts,
     status: "pending",
   });
 
@@ -82,8 +61,8 @@ const approvePurchaseOrder = AsyncHandler(async (req, res) => {
   }
   const { POId } = req.body;
 
-  await PurchaseOrder.findByIdAndUpdate(POId, {status: "approved"})
-  res.json({success: true, message: `Approved PO ${POId}`})
+  await PurchaseOrder.findByIdAndUpdate(POId, { status: "approved" });
+  res.json({ success: true, message: `Approved PO ${POId}` });
 });
 
 module.exports = {
