@@ -1,6 +1,7 @@
 const AsyncHandler = require("express-async-handler");
 const getUserData = require("../../../masterPage/functions/getUserData");
 const SaleOrder = require("../models/SaleOrder");
+const Inventory = require("../models/Inventory");
 
 const getSaleOrderList = AsyncHandler(async (req, res) => {
   const user = req.user;
@@ -60,7 +61,36 @@ const approveSaleOrder = AsyncHandler(async (req, res) => {
   }
   const { SOId } = req.body;
 
-  await SaleOrder.findByIdAndUpdate(SOId, { status: "approved" });
+  const saleOrder = await SaleOrder.findById(SOId);
+  if (!saleOrder) {
+    res.status(404);
+    throw new Error("Sale Order not found");
+  }
+
+  for (const soldProduct of saleOrder.products) {
+    const inventory = await Inventory.findOne({
+      "product._id": soldProduct._id,
+    });
+
+    const projectedExport = inventory.exportQty + soldProduct.quantity;
+    if (projectedExport > inventory.importQty) {
+      throw new Error(
+        `Not enough inventory for product: ${soldProduct.name}. ` +
+          `Available: ${inventory.importQty - inventory.exportQty}, ` +
+          `Requested: ${soldProduct.quantity}`
+      );
+    }
+  }
+
+  saleOrder.status = "approved";
+  await saleOrder.save();
+
+  for (const soldProduct of saleOrder.products) {
+    await Inventory.updateOne(
+      { "product._id": soldProduct._id },
+      { $inc: { exportQty: soldProduct.quantity } }
+    );
+  }
   res.json({ success: true, message: `Approved SO ${SOId}` });
 });
 
