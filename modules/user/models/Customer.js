@@ -7,7 +7,6 @@ const CustomerSchema = new mongoose.Schema(
   {
     fullname: { type: DATA_TYPE.STRING, required: true },
     email: { type: DATA_TYPE.STRING, required: true, unique: true },
-    company: { type: DATA_TYPE.STRING },
     phone: { type: DATA_TYPE.STRING, required: true, unique: true },
   },
   { timestamps: true, collection: "customers" }

@@ -6,6 +6,15 @@ const {
 const SaleOrderSchema = new mongoose.Schema(
   {
     name: { type: DATA_TYPE.STRING },
+    orderDate: { type: DATA_TYPE.STRING },
+    customer: {
+      _id: { type: DATA_TYPE.OBJECT_ID },
+      fullname: { type: DATA_TYPE.STRING },
+      email: { type: DATA_TYPE.STRING },
+      phone: { type: DATA_TYPE.STRING },
+    },
+    deliveryAddress: { type: DATA_TYPE.STRING },
+    estimatedDeliveryDate: { type: DATA_TYPE.STRING },
     products: [
       {
         _id: { type: DATA_TYPE.OBJECT_ID },
@@ -13,10 +22,11 @@ const SaleOrderSchema = new mongoose.Schema(
         unit: { type: DATA_TYPE.STRING },
         price: { type: DATA_TYPE.NUMBER },
         quantity: { type: DATA_TYPE.NUMBER },
-        status: { type: DATA_TYPE.STRING },
       },
     ],
     status: { type: DATA_TYPE.STRING },
+    approvedAt: { type: DATA_TYPE.STRING },
+    completedAt: { type: DATA_TYPE.STRING },
   },
   { timestamps: true, collection: "sale-orders" }
 );

@@ -12,20 +12,20 @@ const createPurchaseOrder = AsyncHandler(async (req, res) => {
     throw new Error("You are not authorized to access this resource");
   }
 
-  const { name, products } = req.body;
+  const { name, vendor, orderDate, estimatedDeliveryDate, products } = req.body;
+
   const existedPO = await PurchaseOrder.findOne({ name: name });
   if (existedPO) {
     res.status(400);
     throw new Error("Existed purchase order name");
   }
-  const enrichedProducts = products.map((product) => ({
-    ...product,
-    status: "pending",
-  }));
 
   await PurchaseOrder.create({
     name,
-    products: enrichedProducts,
+    orderDate,
+    vendor,
+    estimatedDeliveryDate,
+    products,
     status: "pending",
   });
 
@@ -61,7 +61,10 @@ const approvePurchaseOrder = AsyncHandler(async (req, res) => {
   }
   const { POId } = req.body;
 
-  await PurchaseOrder.findByIdAndUpdate(POId, { status: "approved" });
+  await PurchaseOrder.findByIdAndUpdate(POId, {
+    status: "approved",
+    approvedAt: new Date().toISOString().split("T")[0],
+  });
   res.json({ success: true, message: `Approved PO ${POId}` });
 });
 

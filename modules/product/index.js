@@ -10,6 +10,7 @@ const PurchaseOrderRoute = require("./routes/purchaseOrderRoute");
 const BOLRoute = require("./routes/billOfLadingRoute");
 const ProductRoute = require("./routes/productRoute");
 const SaleOrderRoute = require("./routes/saleOrderRoute");
+const DeliveryNoteRoute = require("./routes/deliveryNoteRoute")
 
 require("dotenv").config({ path: "../../.env" });
 
@@ -34,6 +35,7 @@ app.use("/product/purchase-order", PurchaseOrderRoute);
 app.use("/product/bill-of-lading", BOLRoute);
 app.use("/product", ProductRoute);
 app.use("/product/sale-order", SaleOrderRoute);
+app.use("/product/delivery-note", DeliveryNoteRoute);
 
 app.use((req, res, next) => {
   res.status(404);

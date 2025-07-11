@@ -15,7 +15,7 @@ const getVendorList = AsyncHandler(async (req, res) => {
   const user = req.user;
 
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:view]")) {
+  if (!permissions.includes("[community:view]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
@@ -33,13 +33,13 @@ const createVendor = AsyncHandler(async (req, res) => {
   const user = req.user;
 
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:create]")) {
+  if (!permissions.includes("[community:create]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
 
-  const { name, password, email, address, phone, taxId } = req.body;
-  const existingVendor = await User.findOne({ username: email });
+  const { name, email, address, phone, taxId } = req.body;
+  const existingVendor = await Vendor.findOne({ name: name });
 
   if (existingVendor) {
     res.status(400);
@@ -54,12 +54,6 @@ const createVendor = AsyncHandler(async (req, res) => {
     taxId: taxId,
   });
 
-  const { _id } = await Role.findOne({ role: "vendor" });
-
-  await User.create({ username: email, role: _id });
-
-  await onUserCreate({ username: email, password: password });
-
   res.json({
     success: true,
     message: `Vendor ${name} created successfully`,
@@ -69,22 +63,18 @@ const createVendor = AsyncHandler(async (req, res) => {
 const deleteManyVendor = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:delete]")) {
+  if (!permissions.includes("[community:delete]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
 
   const vendorIds = req.body;
 
-  const usernames = await Promise.all(
+  await Promise.all(
     vendorIds.map(async (id) => {
-      const { email } = await Vendor.findByIdAndDelete(id);
-      await User.findOneAndDelete({ username: email });
-      return email;
+      await Vendor.findByIdAndDelete(id);
     })
   );
-
-  onManyUserDelete(usernames);
 
   res.json({
     success: true,
@@ -95,34 +85,28 @@ const deleteManyVendor = AsyncHandler(async (req, res) => {
 const createManyVendor = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:create]")) {
+  if (!permissions.includes("[community:create]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
 
   const data = req.excelData;
 
-  const { _id } = await Role.findOne({ role: "vendor" });
-
-  const newAccounts = await Promise.all(
+  await Promise.all(
     data.map(async (vendor) => {
-      const { name, password, address, email, phone, taxId } = vendor;
+      const { name, address, email, phone, taxId } = vendor;
 
-      const existingUser = await User.findOne({
-        $or: [{ username: email }, { phone: phone }],
+      const existingVendor = await Vendor.findOne({
+        $or: [{ name: name }, { phone: phone }],
       });
-      if (existingUser) {
+      if (existingVendor) {
         res.status(401);
-        throw new Error(`Email: ${email} or Phone number: ${phone} used`);
+        throw new Error(`Vendor name ${name} or Phone number: ${phone} used`);
       }
 
       await Vendor.create({ name, address, email, phone, taxId });
-      await User.create({ username: email, role: _id });
-      return { username: email, password };
     })
   );
-
-  await onManyUserCreate(newAccounts);
 
   res.json({
     success: true,
@@ -133,7 +117,7 @@ const createManyVendor = AsyncHandler(async (req, res) => {
 const printVendorList = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:print]")) {
+  if (!permissions.includes("[community:print]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
@@ -161,7 +145,7 @@ const printVendorList = AsyncHandler(async (req, res) => {
 const getVendorData = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:export]")) {
+  if (!permissions.includes("[community:export]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }

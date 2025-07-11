@@ -3,7 +3,7 @@ const getUserData = require("../../../masterPage/functions/getUserData");
 const BillOfLading = require("../models/BillOfLading");
 const PurchaseOrder = require("../models/PurchaseOrder");
 const Product = require("../models/Product");
-const Inventory = require("../models/Inventory");
+const { onPurchaseSuccess } = require("../producers/reportPurchaseProducer");
 
 const getBillOfLadingList = AsyncHandler(async (req, res) => {
   const user = req.user;
@@ -29,67 +29,44 @@ const createBillOfLading = AsyncHandler(async (req, res) => {
 
   if (!userData.permissions.includes("[product:create]")) {
     res.status(401);
-    throw new Error("you are not authorized to access this resource");
+    throw new Error("You are not authorized to access this resource");
   }
-  //affect bol done, po, inventory done
-  const { name, purchaseOrderItems } = req.body;
-  const enrichedData = await Promise.all(
-    purchaseOrderItems.map(async (item) => {
-      const purchaseOrder = await PurchaseOrder.findById(
-        item.purchaseOrder
-      ).select("_id name status products");
-      const product = purchaseOrder.products.find(
-        (product) => String(product._id) === String(item.product)
-      );
 
-      await Inventory.updateOne(
-        { "product._id": item.product },
-        {
-          $inc: { importQty: product.quantity },
-        }
-      );
+  const { name, vendor, products } = req.body;
+
+  await Promise.all(
+    products.map(async (item) => {
+      const poId = item.purchaseOrder._id;
+      const productId = item._id;
 
       await PurchaseOrder.updateOne(
-        { _id: purchaseOrder._id },
+        { _id: poId },
         {
           $set: {
             "products.$[elem].status": "completed",
           },
         },
         {
-          arrayFilters: [{ "elem._id": product._id }],
+          arrayFilters: [{ "elem._id": productId }],
         }
       );
-      const updatedPO = await PurchaseOrder.findById(purchaseOrder._id);
 
-      const notCompleted = updatedPO.products.find(
+      const updatedPO = await PurchaseOrder.findById(poId);
+      const hasPending = updatedPO.products.some(
         (product) => product.status === "pending"
       );
-      if (!notCompleted) {
-        await PurchaseOrder.updateOne(
-          { _id: purchaseOrder._id },
-          { status: "completed" }
-        );
-      }
 
-      return {
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: product.quantity,
-        unit: product.unit,
-        purchaseOrder: {
-          _id: purchaseOrder._id,
-          name: purchaseOrder.name,
-          status: purchaseOrder.status,
-        },
-      };
+      if (!hasPending) {
+        await PurchaseOrder.updateOne({ _id: poId }, { status: "completed" });
+      }
     })
   );
 
-  await BillOfLading.create({ products: enrichedData, name: name });
+  const bol = await BillOfLading.create({ name, vendor, products });
 
-  res.json({ success: true, message: `Created BOL successfully` });
+  await onPurchaseSuccess(bol);
+
+  res.json({ success: true, message: "Created BOL successfully" });
 });
 
 module.exports = { getBillOfLadingList, createBillOfLading };

@@ -17,6 +17,9 @@ apiEndpoints:
   productEndpoint:
     path: /product/*
     methods: GET, POST, PUT, DELETE, OPTIONS
+  reportEndpoint:
+    path: /report/*
+    methods: GET, POST, PUT, DELETE, OPTIONS
 
 serviceEndpoints:
   employeeService:
@@ -29,6 +32,8 @@ serviceEndpoints:
     url: http://localhost:5054
   productService:
     url: http://localhost:5055
+  reportService:
+    url: http://localhost:5056
 
 pipelines:
   employeePipeline:
@@ -105,6 +110,24 @@ pipelines:
       - proxy:
           - action:
               serviceEndpoint: productService
+      - jwt:
+          - action:
+              secretOrPublicKey: "chuongdz"
+              algorithms:
+                - HS256
+              credentialsRequired: true
+              options:
+                ignoreExpiration: false
+  reportPipeline:
+    apiEndpoints:
+      - reportEndpoint
+    policies:
+      - log:
+          - action:
+              message: "Incoming request to /report/*"
+      - proxy:
+          - action:
+              serviceEndpoint: reportService
       - jwt:
           - action:
               secretOrPublicKey: "chuongdz"

@@ -15,11 +15,22 @@ const BOLSchema = new mongoose.Schema(
         purchaseOrder: {
           _id: { type: DATA_TYPE.OBJECT_ID },
           name: { type: DATA_TYPE.STRING },
-          status: { type: DATA_TYPE.STRING },
+          orderDate: { type: DATA_TYPE.STRING },
+
+          estimatedDeliveryDate: { type: DATA_TYPE.STRING },
+          approvedAt: { type: DATA_TYPE.STRING },
         },
       },
     ],
     name: { type: DATA_TYPE.STRING },
+    vendor: {
+      _id: { type: DATA_TYPE.OBJECT_ID },
+      name: { type: DATA_TYPE.STRING },
+      email: { type: DATA_TYPE.STRING },
+      phone: { type: DATA_TYPE.STRING },
+      address: { type: DATA_TYPE.STRING },
+      taxId: { type: DATA_TYPE.STRING },
+    },
   },
   { timestamps: true, collection: "BOLs" }
 );

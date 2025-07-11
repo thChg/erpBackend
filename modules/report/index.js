@@ -1,16 +1,17 @@
 const express = require("express");
-const errorHandler = require("../../masterPage/middlewares/errorHandler");
 const cors = require("cors");
-const connectToDB = require("../../masterPage/config/databaseConnection");
-const { logInfo } = require("../../masterPage/middlewares/logger");
 const cookieParser = require("cookie-parser");
-const accountantRoute = require("../user/routes/accountantRoute");
+
+const errorHandler = require("../../masterPage/middlewares/errorHandler");
+const connectToDB = require("../../masterPage/config/databaseConnection");
+const fiscalPeriodRoute = require("./routes/fiscalPeriodRoute");
+const stockJournalRoute = require("./routes/stockJouralRoute");
+const { consume } = require("./consumers/consumer");
 
 require("dotenv").config({ path: "../../.env" });
 
-const PORT = process.env.EMPLOYEE_PORT;
-const DB_NAME = process.env.EMPLOYEE_DB_NAME;
-const CLIENT_URL = process.env.CLIENT_URL;
+const PORT = process.env.REPORT_PORT;
+const DB_NAME = process.env.REPORT_DB_NAME;
 
 const app = express();
 
@@ -18,16 +19,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: CLIENT_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
 app.use(cookieParser());
 
 connectToDB(DB_NAME);
+consume();
 
-app.use(logInfo);
-app.use("/employee/accountant", accountantRoute);
+app.use("/report/fiscal-period", fiscalPeriodRoute)
+app.use("/report/stock-journal", stockJournalRoute)
 
 app.use((req, res, next) => {
   res.status(404);

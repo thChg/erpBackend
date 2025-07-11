@@ -1,11 +1,10 @@
 const express = require("express");
 const AuthValidate = require("../../../masterPage/middlewares/authValidate");const { getInventoryList } = require("../controllers/inventoryController");
-const { getProductList, updateProduct, createProduct } = require("../controllers/productController");
+const { getProductList, createProduct } = require("../controllers/productController");
 
 const router = express.Router();
 
 router.get("/product-list", AuthValidate, getProductList);
-router.put("/update-product", AuthValidate, updateProduct);
 router.post("/create-product", AuthValidate, createProduct);
 
 module.exports = router;

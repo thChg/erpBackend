@@ -38,7 +38,7 @@ app.use("/user/permission", permissionRoute);
 app.use("/user/page", menuRoute);
 app.use("/user/customer", customerRoute);
 app.use("/user/vendor", vendorRoute);
-app.use("/user/employee", employeeRoute);
+app.use("/user/empl45oyee", employeeRoute);
 app.use("/user/accountant", accountantRoute);
 
 app.use((req, res, next) => {

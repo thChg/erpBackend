@@ -2,20 +2,13 @@ const AsyncHandler = require("express-async-handler");
 const moment = require("moment");
 const getUserPermission = require("../utils/getUserPermission");
 const Customer = require("../models/Customer");
-const {
-  onUserCreate,
-  onManyUserCreate,
-} = require("../producers/userRegisterProducer");
-const Role = require("../models/Role");
-const User = require("../models/User");
-const { onManyUserDelete } = require("../producers/userDeleteProducer");
 const { generatePdf } = require("../../../masterPage/functions/generatePdf");
 
 const getCustomerList = AsyncHandler(async (req, res) => {
   const user = req.user;
 
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:view]")) {
+  if (!permissions.includes("[community:view]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
@@ -33,31 +26,26 @@ const createCustomer = AsyncHandler(async (req, res) => {
   const user = req.user;
 
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:create]")) {
+  if (!permissions.includes("[community:create]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
 
-  const { fullname, password, email, company, phone } = req.body;
-  const existingCustomer = await User.findOne({ username: email });
+  const { fullname, email, phone } = req.body;
+  const existingCustomer = await Customer.findOne({
+    $or: [{ email: email }, { phone: phone }],
+  });
 
   if (existingCustomer) {
     res.status(400);
-    throw new Error("Email already used!");
+    throw new Error("Email or phone number already used!");
   }
 
   await Customer.create({
     fullname: fullname,
     email: email,
-    company: company,
     phone: phone,
   });
-
-  const { _id } = await Role.findOne({ role: "customer" });
-
-  await User.create({ username: email, role: _id });
-
-  await onUserCreate({ username: email, password: password });
 
   res.json({
     success: true,
@@ -68,22 +56,18 @@ const createCustomer = AsyncHandler(async (req, res) => {
 const deleteManyCustomer = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:delete]")) {
+  if (!permissions.includes("[community:delete]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
 
   const customerIds = req.body;
 
-  const usernames = await Promise.all(
+  await Promise.all(
     customerIds.map(async (id) => {
-      const { email } = await Customer.findByIdAndDelete(id);
-      await User.findOneAndDelete({ username: email });
-      return email;
+      await Customer.findByIdAndDelete(id);
     })
   );
-
-  onManyUserDelete(usernames);
 
   res.json({
     success: true,
@@ -94,34 +78,28 @@ const deleteManyCustomer = AsyncHandler(async (req, res) => {
 const createManyCustomer = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:create]")) {
+  if (!permissions.includes("[community:create]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
 
   const data = req.excelData;
 
-  const { _id } = await Role.findOne({ role: "customer" });
-
-  const newAccounts = await Promise.all(
+  await Promise.all(
     data.map(async (customer) => {
-      const { fullname, password, company, email, phone } = customer;
+      const { fullname, email, phone } = customer;
 
-      const existingUser = await User.findOne({
-        $or: [{ username: email }, { phone: phone }],
+      const existingUser = await Customer.findOne({
+        $or: [{ email: email }, { phone: phone }],
       });
       if (existingUser) {
         res.status(401);
         throw new Error(`Email: ${email} or Phone number: ${phone} used`);
       }
 
-      await Customer.create({ fullname, company, email, phone });
-      await User.create({ username: email, role: _id });
-      return { username: email, password };
+      await Customer.create({ fullname, email, phone });
     })
   );
-
-  await onManyUserCreate(newAccounts);
 
   res.json({
     success: true,
@@ -132,7 +110,7 @@ const createManyCustomer = AsyncHandler(async (req, res) => {
 const printCustomerList = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:print]")) {
+  if (!permissions.includes("[community:print]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
@@ -142,7 +120,7 @@ const printCustomerList = AsyncHandler(async (req, res) => {
   const data = await Promise.all(
     body.map(async (customerId, index) => {
       const customer = await Customer.findById(customerId).select(
-        "fullname email company phone"
+        "fullname email phone"
       );
       return { ...customer.toObject(), num: index + 1 };
     })
@@ -160,7 +138,7 @@ const printCustomerList = AsyncHandler(async (req, res) => {
 const getCustomerData = AsyncHandler(async (req, res) => {
   const user = req.user;
   const permissions = await getUserPermission(user);
-  if (!permissions.includes("[people:export]")) {
+  if (!permissions.includes("[community:export]")) {
     res.status(401);
     throw new Error("You are not authorized to this resource");
   }
@@ -171,7 +149,7 @@ const getCustomerData = AsyncHandler(async (req, res) => {
     body.map(
       async (customerId) =>
         await Customer.findById(customerId).select(
-          "fullname company email phone"
+          "fullname email phone"
         )
     )
   );
