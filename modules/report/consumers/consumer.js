@@ -1,7 +1,9 @@
 const { reportPurchaseConsumer } = require("./reportPurchaseConsumer");
+const { reportSaleConsumer } = require("./reportSaleConsumer");
 
 const consume = () => {
-    reportPurchaseConsumer()
+  reportPurchaseConsumer();
+  reportSaleConsumer();
 };
 
 module.exports = { consume };

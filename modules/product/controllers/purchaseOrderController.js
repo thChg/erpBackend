@@ -51,7 +51,24 @@ const getPurchaseOrderList = AsyncHandler(async (req, res) => {
   res.json({ purchaseOrders, totalPurchaseOrders });
 });
 
-const approvePurchaseOrder = AsyncHandler(async (req, res) => {
+const resolvePurchaseOrder = AsyncHandler(async (req, res) => {
+  const user = req.user;
+  const userData = await getUserData(user);
+
+  if (!userData.permissions.includes("[accounting:resolve]")) {
+    res.status(401);
+    throw new Error("You are not authorized to access this resource");
+  }
+  const { POId, status } = req.body;
+  console.log(POId, status);
+  await PurchaseOrder.findByIdAndUpdate(POId, {
+    status,
+    approvedAt: new Date().toISOString().split("T")[0],
+  });
+  res.json({ success: true, message: `Approved PO ${POId}` });
+});
+
+const updatePurchaseOrder = AsyncHandler(async (req, res) => {
   const user = req.user;
   const userData = await getUserData(user);
 
@@ -59,17 +76,19 @@ const approvePurchaseOrder = AsyncHandler(async (req, res) => {
     res.status(401);
     throw new Error("You are not authorized to access this resource");
   }
-  const { POId } = req.body;
+  const { _id, name, estimatedDeliveryDate, orderDate } = req.body;
 
-  await PurchaseOrder.findByIdAndUpdate(POId, {
-    status: "approved",
-    approvedAt: new Date().toISOString().split("T")[0],
+  await PurchaseOrder.findByIdAndUpdate(_id, {
+    name,
+    estimatedDeliveryDate,
+    orderDate,
   });
-  res.json({ success: true, message: `Approved PO ${POId}` });
+  res.json({ success: true, message: `updated purchase order ${_id}` });
 });
 
 module.exports = {
   createPurchaseOrder,
   getPurchaseOrderList,
-  approvePurchaseOrder,
+  resolvePurchaseOrder,
+  updatePurchaseOrder,
 };

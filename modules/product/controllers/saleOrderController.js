@@ -58,15 +58,15 @@ const createSaleOrder = AsyncHandler(async (req, res) => {
   res.json({ success: true, message: "Sale order created successfully" });
 });
 
-const approveSaleOrder = AsyncHandler(async (req, res) => {
+const resolveSaleOrder = AsyncHandler(async (req, res) => {
   const user = req.user;
   const userData = await getUserData(user);
 
-  if (!userData.permissions.includes("[accounting:approve]")) {
+  if (!userData.permissions.includes("[accounting:resolve]")) {
     res.status(401);
     throw new Error("You are not authorized to access this resource");
   }
-  const { SOId } = req.body;
+  const { SOId, status } = req.body;
 
   const saleOrder = await SaleOrder.findById(SOId);
   if (!saleOrder) {
@@ -74,43 +74,24 @@ const approveSaleOrder = AsyncHandler(async (req, res) => {
     throw new Error("Sale Order not found");
   }
 
-  // for (const soldProduct of saleOrder.products) {
-  //   const inventory = await Inventory.findOne({
-  //     "product._id": soldProduct._id,
-  //   });
-
-  // const projectedExport = inventory.exportQty + soldProduct.quantity;
-  // if (projectedExport > inventory.importQty) {
-  //   throw new Error(
-  //     `Not enough inventory for product: ${soldProduct.name}. ` +
-  //       `Available: ${inventory.importQty - inventory.exportQty}, ` +
-  //       `Requested: ${soldProduct.quantity}`
-  //   );
-  // }
-  // }
-
-  saleOrder.status = "approved";
+  saleOrder.status = status;
   saleOrder.approvedAt = new Date().toISOString().split("T")[0];
   await saleOrder.save();
 
-  await DeliveryNote.create({
-    name: saleOrder.name,
-    orderDate: saleOrder.orderDate,
-    customer: saleOrder.customer,
-    deliveryAddress: saleOrder.deliveryAddress,
-    estimatedDeliveryDate: saleOrder.estimatedDeliveryDate,
-    products: saleOrder.products,
-    approvedAt: saleOrder.approvedAt,
-    status: "pending",
-  });
-
-  for (const soldProduct of saleOrder.products) {
-    await Inventory.updateOne(
-      { "product._id": soldProduct._id },
-      { $inc: { exportQty: soldProduct.quantity } }
-    );
+  if (status === "approved") {
+    await DeliveryNote.create({
+      name: saleOrder.name,
+      orderDate: saleOrder.orderDate,
+      customer: saleOrder.customer,
+      deliveryAddress: saleOrder.deliveryAddress,
+      estimatedDeliveryDate: saleOrder.estimatedDeliveryDate,
+      products: saleOrder.products,
+      approvedAt: saleOrder.approvedAt,
+      status: "pending",
+    });
   }
-  res.json({ success: true, message: `Approved SO ${SOId}` });
+
+  res.json({ success: true, message: `Resolved SO ${SOId}` });
 });
 
 const updateSaleOrder = AsyncHandler(async (req, res) => {
@@ -128,7 +109,7 @@ const updateSaleOrder = AsyncHandler(async (req, res) => {
     deliveryAddress,
     estimatedDeliveryDate,
     approvedAt,
-    completedAt,
+    acceptedAt,
     _id,
   } = req.body;
 
@@ -147,7 +128,7 @@ const updateSaleOrder = AsyncHandler(async (req, res) => {
         deliveryAddress,
         estimatedDeliveryDate,
         approvedAt,
-        completedAt,
+        acceptedAt,
       },
     }
   );
@@ -180,7 +161,7 @@ const deleteSaleOrder = AsyncHandler(async (req, res) => {
 module.exports = {
   getSaleOrderList,
   createSaleOrder,
-  approveSaleOrder,
+  resolveSaleOrder,
   updateSaleOrder,
   deleteSaleOrder,
 };

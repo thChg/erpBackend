@@ -2,6 +2,7 @@ const AsyncHandler = require("express-async-handler");
 const DeliveryNote = require("../models/DeliveryNote");
 const getUserPermission = require("../../user/utils/getUserPermission");
 const SaleOrder = require("../models/SaleOrder");
+const { onSaleSuccess } = require("../producers/reportSaleProducer");
 
 const getDeliveryNoteList = AsyncHandler(async (req, res) => {
   const user = req.user;
@@ -36,6 +37,7 @@ const resolveDeliveryNote = AsyncHandler(async (req, res) => {
   }
 
   deliveryNote.status = action;
+  console.log(deliveryNote)
   await deliveryNote.save();
   const saleOrder = await SaleOrder.findOne({ name: deliveryNote.name });
   if (!saleOrder) {
@@ -44,7 +46,13 @@ const resolveDeliveryNote = AsyncHandler(async (req, res) => {
   }
 
   saleOrder.status = action;
+  if (action === "accepted") {
+    saleOrder.acceptedAt = new Date().toISOString().split("T")[0];
+    
+    await onSaleSuccess(deliveryNote)
+  }
   await saleOrder.save();
+
 
   res.json({ success: true, message: "Resolve delivery note successfully" });
 });

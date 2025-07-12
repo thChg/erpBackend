@@ -26,7 +26,7 @@ const SaleOrderSchema = new mongoose.Schema(
     ],
     status: { type: DATA_TYPE.STRING },
     approvedAt: { type: DATA_TYPE.STRING },
-    completedAt: { type: DATA_TYPE.STRING },
+    acceptedAt: { type: DATA_TYPE.STRING },
   },
   { timestamps: true, collection: "sale-orders" }
 );
