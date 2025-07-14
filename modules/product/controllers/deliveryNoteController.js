@@ -37,7 +37,7 @@ const resolveDeliveryNote = AsyncHandler(async (req, res) => {
   }
 
   deliveryNote.status = action;
-  console.log(deliveryNote)
+
   await deliveryNote.save();
   const saleOrder = await SaleOrder.findOne({ name: deliveryNote.name });
   if (!saleOrder) {
