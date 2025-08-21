@@ -1,5 +1,5 @@
 const express = require("express");
-const AuthValidate = require("../../../masterPage/middlewares/authValidate");
+
 const {
   getDeliveryNoteList,
   resolveDeliveryNote,
@@ -7,7 +7,7 @@ const {
 
 const router = express.Router();
 
-router.get("/delivery-note-list", AuthValidate, getDeliveryNoteList);
-router.post("/resolve/:id", AuthValidate, resolveDeliveryNote);
+router.get("/delivery-note-list", getDeliveryNoteList);
+router.post("/resolve/:id", resolveDeliveryNote);
 
 module.exports = router;

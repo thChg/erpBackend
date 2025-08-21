@@ -1,10 +1,12 @@
 const express = require("express");
-const { getBillOfLadingList, createBillOfLading } = require("../controllers/billOfLadingController");
-const AuthValidate = require("../../../masterPage/middlewares/authValidate");
+const {
+  getBillOfLadingList,
+  createBillOfLading,
+} = require("../controllers/billOfLadingController");
 
 const router = express.Router();
 
-router.get("/bill-of-lading-list", AuthValidate, getBillOfLadingList)
-router.post("/create-bill-of-lading", AuthValidate, createBillOfLading);
+router.get("/bill-of-lading-list", getBillOfLadingList);
+router.post("/create-bill-of-lading", createBillOfLading);
 
 module.exports = router;

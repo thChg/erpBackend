@@ -2,14 +2,14 @@ http:
   port: 5050
 
 apiEndpoints:
-  employeeEndpoint:
-    path: /employee/*
+  systemEndpoint:
+    path: /system/*
+    methods: GET, POST, PUT, DELETE, OPTIONS
+  humanResourceEndpoint:
+    path: /human-resource/*
     methods: GET, POST, PUT, DELETE, OPTIONS
   authenticationEndpoint:
     path: /auth/*
-    methods: GET, POST, PUT, DELETE, OPTIONS
-  userEndpoint:
-    path: /user/*
     methods: GET, POST, PUT, DELETE, OPTIONS
   orderEndpoint:
     path: /order/*
@@ -22,12 +22,10 @@ apiEndpoints:
     methods: GET, POST, PUT, DELETE, OPTIONS
 
 serviceEndpoints:
-  employeeService:
+  systemService:
     url: http://localhost:5051
-  authenticationService:
+  humanResourceService:
     url: http://localhost:5052
-  userService:
-    url: http://localhost:5053
   orderService:
     url: http://localhost:5054
   productService:
@@ -36,16 +34,16 @@ serviceEndpoints:
     url: http://localhost:5056
 
 pipelines:
-  employeePipeline:
+  systemPipeline:
     apiEndpoints:
-      - employeeEndpoint
+      - systemEndpoint
     policies:
       - log:
           - action:
-              message: "Incoming request to /employee/*"
+              message: "Incoming request to /system/*"
       - proxy:
           - action:
-              serviceEndpoint: employeeService
+              serviceEndpoint: systemService
       - jwt:
           - action:
               secretOrPublicKey: "chuongdz"
@@ -54,26 +52,16 @@ pipelines:
               credentialsRequired: true
               options:
                 ignoreExpiration: false
-  authenticationPipeline:
+  humanResourcePipeline:
     apiEndpoints:
-      - authenticationEndpoint
+      - humanResourceEndpoint
     policies:
       - log:
           - action:
-              message: "Incoming request to /auth/*"
+              message: "Incoming request to /human-resource/*"
       - proxy:
           - action:
-              serviceEndpoint: authenticationService
-  userPipeline:
-    apiEndpoints:
-      - userEndpoint
-    policies:
-      - log:
-          - action:
-              message: "Incoming request to /user/*"
-      - proxy:
-          - action:
-              serviceEndpoint: userService
+              serviceEndpoint: humanResourceService
       - jwt:
           - action:
               secretOrPublicKey: "chuongdz"

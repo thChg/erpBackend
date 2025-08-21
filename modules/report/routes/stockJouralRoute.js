@@ -1,9 +1,9 @@
 const express = require("express");
-const AuthValidate = require("../../../masterPage/middlewares/authValidate");
+
 const { getStockJournal } = require("../controllers/stockJournalController");
 
 const router = express.Router();
 
-router.get("/stock", AuthValidate, getStockJournal);
+router.get("/stock", getStockJournal);
 
 module.exports = router;

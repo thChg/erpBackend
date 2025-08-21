@@ -1,5 +1,5 @@
 const produceAndConsume = require("../rabbitmq/produceAndConsume");
-const { getCache } = require("../utils/cacheUtils");
+const { getCache } = require("../utils/cacheHelper");
 
 const getUserData = async (user) => {
   const data = await getCache(`user:data:${user.username}`);

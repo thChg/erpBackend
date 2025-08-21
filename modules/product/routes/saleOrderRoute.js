@@ -1,19 +1,19 @@
 const express = require("express");
-const AuthValidate = require("../../../masterPage/middlewares/authValidate");
+
 const {
   createSaleOrder,
   getSaleOrderList,
   resolveSaleOrder,
   updateSaleOrder,
-  deleteSaleOrder
+  deleteSaleOrder,
 } = require("../controllers/saleOrderController");
 
 const router = express.Router();
 
-router.post("/create-sale-order", AuthValidate, createSaleOrder);
-router.get("/sale-order-list", AuthValidate, getSaleOrderList);
-router.post("/resolve", AuthValidate, resolveSaleOrder);
-router.put("/update", AuthValidate, updateSaleOrder);
-router.delete("/delete/:id", AuthValidate, deleteSaleOrder)
+router.post("/create-sale-order", createSaleOrder);
+router.get("/sale-order-list", getSaleOrderList);
+router.post("/resolve", resolveSaleOrder);
+router.put("/update", updateSaleOrder);
+router.delete("/delete/:id", deleteSaleOrder);
 
 module.exports = router;

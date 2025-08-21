@@ -1,5 +1,5 @@
 const express = require("express");
-const AuthValidate = require("../../../masterPage/middlewares/authValidate");
+
 const {
   createPurchaseOrder,
   getPurchaseOrderList,
@@ -9,9 +9,9 @@ const {
 
 const router = express.Router();
 
-router.post("/create-purchase-order", AuthValidate, createPurchaseOrder);
-router.get("/purchase-order-list", AuthValidate, getPurchaseOrderList);
-router.post("/resolve", AuthValidate, resolvePurchaseOrder);
-router.put("/update", AuthValidate, updatePurchaseOrder);
+router.post("/create-purchase-order", createPurchaseOrder);
+router.get("/purchase-order-list", getPurchaseOrderList);
+router.post("/resolve", resolvePurchaseOrder);
+router.put("/update", updatePurchaseOrder);
 
 module.exports = router;

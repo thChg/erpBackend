@@ -1,14 +1,12 @@
 const { DATA_TYPE } = require("../../../constants/DataType");
-const {
-  default: mongoose,
-} = require("../../../masterPage/config/sharedMongoose");
+const { default: mongoose } = require("../../../masterPage/config/sharedMongoose");
 
 const PurchaseOrderSchema = new mongoose.Schema(
   {
     name: { type: DATA_TYPE.STRING },
     orderDate: { type: DATA_TYPE.STRING },
     vendor: {
-      _id: { type: DATA_TYPE.OBJECT_ID },
+      _id: { type: DATA_TYPE.ID },
       name: { type: DATA_TYPE.STRING },
       email: { type: DATA_TYPE.STRING },
       phone: { type: DATA_TYPE.STRING },
@@ -18,7 +16,7 @@ const PurchaseOrderSchema = new mongoose.Schema(
     estimatedDeliveryDate: { type: DATA_TYPE.STRING },
     products: [
       {
-        _id: { type: DATA_TYPE.OBJECT_ID },
+        _id: { type: DATA_TYPE.ID },
         name: { type: DATA_TYPE.STRING },
         unit: { type: DATA_TYPE.STRING },
         price: { type: DATA_TYPE.NUMBER },

@@ -1,12 +1,10 @@
 const { DATA_TYPE } = require("../../../constants/DataType");
-const {
-  default: mongoose,
-} = require("../../../masterPage/config/sharedMongoose");
+const { default: mongoose } = require("../../../masterPage/config/sharedMongoose");
 
 const StockJournalSchema = new mongoose.Schema(
   {
     product: {
-      _id: { type: DATA_TYPE.OBJECT_ID },
+      _id: { type: DATA_TYPE.ID },
       name: { type: DATA_TYPE.STRING },
       price: { type: DATA_TYPE.NUMBER },
       quantity: { type: DATA_TYPE.NUMBER },
@@ -14,7 +12,7 @@ const StockJournalSchema = new mongoose.Schema(
     },
     action: { type: DATA_TYPE.STRING },
     order: {
-      _id: { type: DATA_TYPE.OBJECT_ID },
+      _id: { type: DATA_TYPE.ID },
       name: { type: DATA_TYPE.STRING },
     },
   },

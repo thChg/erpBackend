@@ -14,7 +14,9 @@ const getStockJournal = AsyncHandler(async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.max(1, parseInt(req.query.limit) || 10);
   const skip = (page - 1) * limit;
-  
+  const accessList = req.accessList.map((a) => a.actionCode);
+  const access = req.accessList.find((a) => a.actionCode === "getList");
+
   const journal = await StockJournal.find({});
 
   const summaryMap = {};

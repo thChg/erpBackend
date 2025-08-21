@@ -17,6 +17,9 @@ const getBillOfLadingList = AsyncHandler(async (req, res) => {
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
   const skip = (page - 1) * limit;
+  const accessList = req.accessList.map((a) => a.actionCode);
+  const access = req.accessList.find((a) => a.actionCode === "getList");
+
   const billOfLadings = await BillOfLading.find({}).skip(skip).limit(limit);
   const totalBillOfLadings = await BillOfLading.countDocuments();
 

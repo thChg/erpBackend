@@ -1,5 +1,5 @@
 const express = require("express");
-const AuthValidate = require("../../../masterPage/middlewares/authValidate");
+
 const {
   createOrderPermissions,
   createOrderController,
@@ -11,9 +11,9 @@ const {
 
 const router = express.Router();
 
-router.get("/create/permissions", AuthValidate, createOrderPermissions);
-router.post("/create", AuthValidate, createOrderController);
-router.get("/get", AuthValidate, getOrderController);
-router.get("/get/permissions", AuthValidate, getOrderPermissions);
+router.get("/create/permissions", createOrderPermissions);
+router.post("/create", createOrderController);
+router.get("/get", getOrderController);
+router.get("/get/permissions", getOrderPermissions);
 
 module.exports = router;

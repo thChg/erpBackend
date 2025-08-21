@@ -1,11 +1,12 @@
 const { default: mongoose } = require("../masterPage/config/sharedMongoose");
 
 const DATA_TYPE = {
-  ID: String,
   STRING: String,
   BOOLEAN: Boolean,
-  OBJECT_ID: mongoose.Schema.Types.ObjectId,
+  ID: mongoose.Schema.Types.ObjectId,
   NUMBER: Number,
+  TIME: mongoose.Schema.Types.Date,
+  ARRAY: mongoose.Schema.Types.Array,
 };
 
 module.exports = { DATA_TYPE };

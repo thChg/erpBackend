@@ -15,6 +15,9 @@ const getDeliveryNoteList = AsyncHandler(async (req, res) => {
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
   const skip = (page - 1) * limit;
+  const accessList = req.accessList.map((a) => a.actionCode);
+  const access = req.accessList.find((a) => a.actionCode === "getList");
+
   const deliveryNotes = await DeliveryNote.find({}).skip(skip).limit(limit);
   const totalDeliveryNotes = await DeliveryNote.countDocuments();
 
@@ -48,11 +51,10 @@ const resolveDeliveryNote = AsyncHandler(async (req, res) => {
   saleOrder.status = action;
   if (action === "accepted") {
     saleOrder.acceptedAt = new Date().toISOString().split("T")[0];
-    
-    await onSaleSuccess(deliveryNote)
+
+    await onSaleSuccess(deliveryNote);
   }
   await saleOrder.save();
-
 
   res.json({ success: true, message: "Resolve delivery note successfully" });
 });

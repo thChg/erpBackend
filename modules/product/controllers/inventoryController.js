@@ -13,6 +13,9 @@ const getInventoryList = AsyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit);
   const page = parseInt(req.query.page);
   const skip = (page - 1) * limit;
+  const accessList = req.accessList.map((a) => a.actionCode);
+  const access = req.accessList.find((a) => a.actionCode === "getList");
+
   const inventory = await Inventory.find({}).skip(skip).limit(limit);
   const totalProducts = await Inventory.countDocuments();
 
